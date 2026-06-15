@@ -71,3 +71,16 @@ def handle_search(message):
 
 if __name__ == "__main__":
     bot.infinity_polling()
+import threading
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+
+def run_dummy_server():
+    server_address = ('', int(os.environ.get('PORT', 8000)))
+    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
+    httpd.serve_forever()
+
+# Запускаем пустышку-сервер для обхода проверки портов Render
+threading.Thread(target=run_dummy_server, daemon=True).start()
+
+# Твой текущий запуск бота (эта строчка у тебя уже есть, убедись, что она ниже)
+bot.infinity_polling()
