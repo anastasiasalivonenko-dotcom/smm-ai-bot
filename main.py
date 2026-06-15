@@ -27,24 +27,7 @@ def search_google(query):
     except Exception:
         return []
 
-def analyze_and_create_offer(company_info):
-    """Генерирует SMM-оффер через бесплатный Google Gemini API"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    headers = {'Content-Type': 'application/json'}
-    
-    prompt = (
-        f"Ты — профессиональный SMM-стратег. Проанализируй эту компанию: {company_info}. "
-        f"Напиши короткое, цепляющее и персонализированное коммерческое предложение (SMM-оффер) "
-        f"для отправки им в директ. Выдели их возможные боли (плохой визуал, регулярность, сторис) "
-        f"и предложи конкретные решения. Пиши на русском или украинском языке (в зависимости от языка запроса), "
-        f"используй эмодзи и структурируй текст."
-    )
-    
-    payload = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
-    }
+
     
     try:
         response = requests.post(url, json=payload, headers=headers)
@@ -53,7 +36,43 @@ def analyze_and_create_offer(company_info):
         return text_output
     except Exception as e:
         return f"Ошибка ИИ Gemini: {str(e)}"
-
+def analyze_and_create_offer(company_info):
+    """Генерирует SMM-оффер через бесплатный Google Gemini API с обходом фильтров"""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    headers = {'Content-Type': 'application/json'}
+    
+    prompt = (
+        f"Ты — дружелюбный SMM-консультант. Посмотри на эту компанию: {company_info}. "
+        f"Напиши короткое, вдохновляющее предложение для их Instagram (на 3-4 абзаца). "
+        f"Предложи улучшить оформление профиля, добавить регулярные Reels и выстроить воронку в сторис. "
+        f"Пиши вежливо, используй эмодзи и структурируй текст, чтобы его было приятно читать."
+    )
+    
+    payload = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }],
+        "safetySettings": [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+        ]
+    }
+    
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        res_json = response.json()
+        
+        # Проверяем, заблокировал ли Google ответ
+        if 'candidates' in res_json and res_json['candidates'][0].get('finishReason') == 'SAFETY':
+            return "⚠️ ИИ заблокировал генерацию из-за фильтров безопасности Google. Попробуй другой запрос."
+            
+        text_output = res_json['candidates'][0]['content']['parts'][0]['text']
+        return text_output
+    except Exception as e:
+        # Если API выдает ошибку структуры, выведем дебаг-инфо для понимания
+        return f"Не удалось сгенерировать оффер. Ответ от Google: {str(res_json.get('error', e))}"
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(message, "Привет! Я твой автономный SMM-скаут. Напиши мне нишу и город через запятую (например: `Салоны красоты, Киев`), и я найду компании и составлю для них крутые офферы! 🚀")
