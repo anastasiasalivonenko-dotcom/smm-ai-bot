@@ -38,7 +38,7 @@ def search_google(query):
         return f"Ошибка ИИ Gemini: {str(e)}"
 def analyze_and_create_offer(company_info):
     """Генерирует SMM-оффер через бесплатный Google Gemini API с обходом фильтров"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {'Content-Type': 'application/json'}
     
     prompt = (
