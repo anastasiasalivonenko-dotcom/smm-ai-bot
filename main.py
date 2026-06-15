@@ -68,9 +68,6 @@ def handle_search(message):
         bot.send_message(message.chat.id, f"🏬 **Найдена компания:**\n{company}\n\n🤖 *ИИ анализирует бренд и составляет оффер...*")
         offer = analyze_and_create_offer(company)
         bot.send_message(message.chat.id, f"📝 **Готовое предложение для отправки:**\n\n{offer}")
-
-if __name__ == "__main__":
-    bot.infinity_polling()
 import threading
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 
@@ -81,6 +78,6 @@ def run_dummy_server():
 
 # Запускаем пустышку-сервер для обхода проверки портов Render
 threading.Thread(target=run_dummy_server, daemon=True).start()
-
+if __name__ == "__main__":
 # Твой текущий запуск бота (эта строчка у тебя уже есть, убедись, что она ниже)
-bot.infinity_polling()
+    bot.infinity_polling()
